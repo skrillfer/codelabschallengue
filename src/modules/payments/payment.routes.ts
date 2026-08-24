@@ -1,0 +1,6 @@
+import { Router } from "express";
+import { createPayment } from "./payment.controller";
+
+export const paymentRouter = Router();
+
+paymentRouter.post("/payments", createPayment);
