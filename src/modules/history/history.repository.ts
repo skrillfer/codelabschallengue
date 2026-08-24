@@ -51,3 +51,45 @@ export async function appendPolicyEvent(
     ],
   );
 }
+
+export type PolicyEvent = {
+  id: number;
+  policyId: string;
+  eventType: string;
+  payload: unknown;
+  previousHash: string | null;
+  eventHash: string;
+  createdAt: Date;
+};
+
+export async function findPolicyEvents(
+  client: PoolClient,
+  policyId: string,
+): Promise<PolicyEvent[]> {
+  const result = await client.query(
+    `
+      SELECT
+        id,
+        policy_id,
+        event_type,
+        payload,
+        previous_hash,
+        event_hash,
+        created_at
+      FROM policy_events
+      WHERE policy_id = $1
+      ORDER BY id ASC
+    `,
+    [policyId],
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    policyId: row.policy_id,
+    eventType: row.event_type,
+    payload: row.payload,
+    previousHash: row.previous_hash,
+    eventHash: row.event_hash,
+    createdAt: row.created_at,
+  }));
+}
