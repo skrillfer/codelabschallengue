@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 import { endorsementRouter } from "./modules/endorsements/endorsement.routes";
 import { paymentRouter } from "./modules/payments/payment.routes";
@@ -6,6 +7,12 @@ import { historyRouter } from "./modules/history/history.routes";
 import { ledgerRouter } from "./modules/ledger/ledger.routes";
 
 export const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
 
 app.use(express.json());
 
