@@ -1,5 +1,7 @@
 import express from "express";
 import { endorsementRouter } from "./modules/endorsements/endorsement.routes";
+import { paymentRouter } from "./modules/payments/payment.routes";
+import { policyRouter } from "./modules/policies/policy.routes";
 
 export const app = express();
 
@@ -12,3 +14,5 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/api", endorsementRouter);
+app.use("/api", paymentRouter);
+app.use("/api", policyRouter);

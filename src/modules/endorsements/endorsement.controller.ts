@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { endorsementSchema } from "./endorsement.schema";
 import { applyEndorsement } from "./endorsement.service";
-import { AppError } from "../../shared/error/app.error";
+import { AppError } from "../../shared/errors/app.error";
 import { ZodError } from "zod";
 
 export async function createEndorsement(req: Request, res: Response) {

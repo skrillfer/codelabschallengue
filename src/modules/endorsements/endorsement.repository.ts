@@ -33,3 +33,33 @@ export async function createBillingDocument(
     ],
   );
 }
+
+export async function findBillingDocumentsByPolicy(
+  client: PoolClient,
+  policyId: string,
+) {
+  const result = await client.query(
+    `
+      SELECT
+        id,
+        type,
+        amount_cents,
+        currency,
+        status,
+        created_at
+      FROM billing_documents
+      WHERE policy_id = $1
+      ORDER BY created_at DESC
+    `,
+    [policyId],
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    type: row.type,
+    amount_cents: Number(row.amount_cents),
+    currency: row.currency.trim(),
+    status: row.status,
+    created_at: row.created_at,
+  }));
+}

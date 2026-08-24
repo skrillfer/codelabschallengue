@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ZodError } from "zod";
 import { paymentSchema } from "./payment.schema";
 import { receivePayment } from "./payment.service";
-import { AppError } from "../../shared/error/app.error";
+import { AppError } from "../../shared/errors/app.error";
 
 export async function createPayment(req: Request, res: Response) {
   try {

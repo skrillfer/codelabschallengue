@@ -1,5 +1,5 @@
 import { db } from "../../db/connection";
-import { AppError } from "../../shared/error/app.error";
+import { AppError } from "../../shared/errors/app.error";
 import { createHashFromPayload } from "../../shared/hashing/hash";
 import { appendPolicyEvent } from "../history/history.repository";
 import {

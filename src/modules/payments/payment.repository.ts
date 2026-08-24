@@ -35,3 +35,31 @@ export async function createPayment(
     ],
   );
 }
+
+export async function findPaymentsByPolicy(
+  client: PoolClient,
+  policyId: string,
+) {
+  const result = await client.query(
+    `
+      SELECT
+        id,
+        external_payment_id,
+        amount_cents,
+        currency,
+        received_at
+      FROM payments
+      WHERE policy_id = $1
+      ORDER BY received_at DESC
+    `,
+    [policyId],
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    external_payment_id: row.external_payment_id,
+    amount_cents: Number(row.amount_cents),
+    currency: row.currency.trim(),
+    received_at: row.received_at,
+  }));
+}
