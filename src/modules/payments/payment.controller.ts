@@ -6,7 +6,10 @@ import { AppError } from "../../shared/errors/app-error";
 
 export async function createPayment(req: Request, res: Response) {
   try {
-    const input = paymentSchema.parse(req.body);
+    const input = paymentSchema.parse({
+      ...req.body,
+      policy_id: req.params.policyId,
+    });
 
     const result = await receivePayment(input);
 

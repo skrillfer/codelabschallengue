@@ -76,3 +76,27 @@ export async function getPremiumReceivableBalance(
 
   return Number(result.rows[0].balance);
 }
+
+export async function findLedgerByPolicy(client: PoolClient, policyId: string) {
+  const result = await client.query(
+    `
+      SELECT
+        lt.id AS transaction_id,
+        lt.source_type,
+        lt.source_id,
+        lt.created_at,
+        le.id AS entry_id,
+        le.account,
+        le.entry_type,
+        le.amount_cents
+      FROM ledger_transactions lt
+      INNER JOIN ledger_entries le
+        ON le.transaction_id = lt.id
+      WHERE lt.policy_id = $1
+      ORDER BY lt.created_at ASC, le.id ASC
+    `,
+    [policyId],
+  );
+
+  return result.rows;
+}

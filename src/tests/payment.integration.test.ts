@@ -6,7 +6,6 @@ import { db } from "../db/connection";
 const paymentPayload = {
   type: "payment.received",
   idempotency_key: "TEST-PAY-001",
-  policy_id: "TEST-PAYMENT-POLICY",
   external_payment_id: "TEST-EXTERNAL-PAY-001",
   amount_cents: 12099,
   currency: "USD",
@@ -74,7 +73,7 @@ afterAll(async () => {
 describe("POST /api/payments", () => {
   it("records a payment and its balanced ledger entries", async () => {
     const response = await request(app)
-      .post("/api/payments")
+      .post("/api/policies/TEST-PAYMENT-POLICY/payments")
       .send(paymentPayload);
 
     expect(response.status).toBe(201);
@@ -125,11 +124,11 @@ describe("POST /api/payments", () => {
 
   it("does not duplicate a retried payment", async () => {
     const firstResponse = await request(app)
-      .post("/api/payments")
+      .post("/api/policies/TEST-PAYMENT-POLICY/payments")
       .send(paymentPayload);
 
     const secondResponse = await request(app)
-      .post("/api/payments")
+      .post("/api/policies/TEST-PAYMENT-POLICY/payments")
       .send(paymentPayload);
 
     expect(firstResponse.status).toBe(201);
@@ -154,10 +153,12 @@ describe("POST /api/payments", () => {
   });
 
   it("returns 409 when the key is reused with another payment payload", async () => {
-    await request(app).post("/api/payments").send(paymentPayload);
+    await request(app)
+      .post("/api/policies/TEST-PAYMENT-POLICY/payments")
+      .send(paymentPayload);
 
     const response = await request(app)
-      .post("/api/payments")
+      .post("/api/policies/TEST-PAYMENT-POLICY/payments")
       .send({
         ...paymentPayload,
         amount_cents: 10000,
@@ -168,5 +169,37 @@ describe("POST /api/payments", () => {
     expect(response.body).toEqual({
       error: "Idempotency key was already used with a different payload",
     });
+  });
+  it("rejects a payment with a different currency", async () => {
+    const response = await request(app)
+      .post("/api/policies/TEST-PAYMENT-POLICY/payments")
+      .send({
+        ...paymentPayload,
+        idempotency_key: "TEST-PAY-CURRENCY",
+        external_payment_id: "TEST-EXTERNAL-PAY-CURRENCY",
+        currency: "GTQ",
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      error: "Payment currency does not match policy currency",
+    });
+
+    const payments = await db.query(`
+    SELECT COUNT(*)::INTEGER AS count
+    FROM payments
+    WHERE policy_id = 'TEST-PAYMENT-POLICY'
+  `);
+
+    expect(payments.rows[0].count).toBe(0);
+
+    const ledger = await db.query(`
+    SELECT COUNT(*)::INTEGER AS count
+    FROM ledger_transactions
+    WHERE policy_id = 'TEST-PAYMENT-POLICY'
+  `);
+
+    expect(ledger.rows[0].count).toBe(0);
   });
 });

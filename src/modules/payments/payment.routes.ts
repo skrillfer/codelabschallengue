@@ -3,4 +3,4 @@ import { createPayment } from "./payment.controller";
 
 export const paymentRouter = Router();
 
-paymentRouter.post("/payments", createPayment);
+paymentRouter.post("/policies/:policyId/payments", createPayment);
