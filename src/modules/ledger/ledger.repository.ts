@@ -1,5 +1,5 @@
 import { PoolClient } from "pg";
-
+import { validateBalancedEntries } from "./ledger.validation";
 type LedgerEntry = {
   account: "cash" | "premium_receivable" | "written_premium";
   entryType: "debit" | "credit";
@@ -18,6 +18,7 @@ export async function createLedgerTransaction(
   client: PoolClient,
   input: CreateLedgerTransactionInput,
 ): Promise<void> {
+  validateBalancedEntries(input.entries);
   await client.query(
     `
       INSERT INTO ledger_transactions (

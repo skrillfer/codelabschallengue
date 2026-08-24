@@ -1,9 +1,8 @@
 import { db } from "../../db/connection";
-import { createHashFromPayload } from "../../shared/hashing/hash";
 import { AppError } from "../../shared/errors/app-error";
 import { findPolicyById } from "../policies/policy.repository";
 import { findPolicyEvents } from "./history.repository";
-
+import { verifyHistoryChain } from "./history.validation";
 export async function getPolicyHistory(policyId: string) {
   const client = await db.connect();
 
@@ -16,29 +15,7 @@ export async function getPolicyHistory(policyId: string) {
 
     const events = await findPolicyEvents(client, policyId);
 
-    let expectedPreviousHash: string | null = null;
-    let chainValid = true;
-
-    for (const event of events) {
-      if (event.previousHash !== expectedPreviousHash) {
-        chainValid = false;
-        break;
-      }
-
-      const expectedHash = createHashFromPayload({
-        policy_id: event.policyId,
-        event_type: event.eventType,
-        payload: event.payload,
-        previous_hash: event.previousHash,
-      });
-
-      if (expectedHash !== event.eventHash) {
-        chainValid = false;
-        break;
-      }
-
-      expectedPreviousHash = event.eventHash;
-    }
+    const chainValid = verifyHistoryChain(events);
 
     return {
       policy_id: policyId,
