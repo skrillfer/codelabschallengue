@@ -1,5 +1,5 @@
 import { db } from "../../db/connection";
-import { AppError } from "../../shared/errors/app.error";
+import { AppError } from "../../shared/errors/app-error";
 import { findBillingDocumentsByPolicy } from "../endorsements/endorsement.repository";
 import { getPremiumReceivableBalance } from "../ledger/ledger.repository";
 import { findPaymentsByPolicy } from "../payments/payment.repository";

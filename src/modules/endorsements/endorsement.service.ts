@@ -13,7 +13,7 @@ import {
 } from "../idempotency/idempotency.repository";
 import { createBillingDocument } from "./endorsement.repository";
 import { EndorsementInput } from "./endorsement.schema";
-import { AppError } from "../../shared/errors/app.error";
+import { AppError } from "../../shared/errors/app-error";
 
 export async function applyEndorsement(input: EndorsementInput) {
   const client = await db.connect();

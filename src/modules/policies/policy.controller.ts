@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AppError } from "../../shared/errors/app.error";
+import { AppError } from "../../shared/errors/app-error";
 import { getPolicy } from "./policy.service";
 
 export async function getPolicyById(req: Request, res: Response) {
