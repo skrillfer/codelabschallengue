@@ -59,7 +59,8 @@ function App() {
   async function handleEndorsement(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
 
     try {
       setMessage(null);
@@ -68,12 +69,15 @@ function App() {
       await applyEndorsement(POLICY_ID, {
         idempotency_key: String(form.get("idempotency_key")),
         effective_date: String(form.get("effective_date")),
-        new_annual_premium_cents: Number(form.get("new_annual_premium_cents")),
+        new_annual_premium_cents: Math.round(
+          Number(form.get("new_annual_premium")) * 100,
+        ),
         reason: String(form.get("reason")),
       });
 
       setMessage("Endorsement applied successfully.");
-      event.currentTarget.reset();
+
+      formElement.reset();
 
       await loadData();
     } catch (error) {
@@ -86,8 +90,8 @@ function App() {
   async function handlePayment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const form = new FormData(event.currentTarget);
-
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       setMessage(null);
       setError(null);
@@ -95,13 +99,13 @@ function App() {
       await recordPayment(POLICY_ID, {
         idempotency_key: String(form.get("idempotency_key")),
         external_payment_id: String(form.get("external_payment_id")),
-        amount_cents: Number(form.get("amount_cents")),
+        amount_cents: Math.round(Number(form.get("amount")) * 100),
         currency: String(form.get("currency")),
         received_at: new Date(String(form.get("received_at"))).toISOString(),
       });
 
       setMessage("Payment recorded successfully.");
-      event.currentTarget.reset();
+      formElement.reset();
 
       await loadData();
     } catch (error) {
@@ -163,8 +167,10 @@ function App() {
         </article>
 
         <article className="card">
-          <span>History</span>
-          <strong>{historyValid ? "Verified" : "Invalid"}</strong>
+          <span>Event history</span>
+          <strong>
+            {historyValid ? "✓ Chain verified" : "⚠ Chain invalid"}
+          </strong>
         </article>
       </section>
 
@@ -183,11 +189,13 @@ function App() {
           </label>
 
           <label>
-            New annual premium (cents)
+            New annual premium
             <input
-              name="new_annual_premium_cents"
+              name="new_annual_premium"
               type="number"
               min="0"
+              step="0.01"
+              placeholder="1500.00"
               required
             />
           </label>
@@ -214,8 +222,15 @@ function App() {
           </label>
 
           <label>
-            Amount (cents)
-            <input name="amount_cents" type="number" min="1" required />
+            Amount
+            <input
+              name="amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="120.99"
+              required
+            />
           </label>
 
           <label>
